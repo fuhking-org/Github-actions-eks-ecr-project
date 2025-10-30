@@ -1,0 +1,52 @@
+name: Deploy Kubernetes Manifests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'kubernetes/**' # Trigger when Kubernetes manifests change
+
+env:
+  AWS_REGION: eu-west-1 # Make sure this matches your Terraform region
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Required for OIDC
+      contents: read
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-oidc-role-k8s # A separate role for K8s deployment
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Install kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.27.1' # Specify a kubectl version compatible with your EKS cluster
+
+    - name: Install kustomize
+      uses: imranismail/setup-kustomize@v1
+      with:
+        kustomize-version: '5.0.0' # Specify kustomize version
+
+    - name: Update kubeconfig
+      run: |
+        aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+        kubectl config view
+        kubectl get nodes # Verify connection
+
+    - name: Deploy application with Kustomize
+      run: |
+        kustomize build kubernetes/overlays/production | kubectl apply -f -
+      # If using Helm:
+      # helm upgrade --install my-app kubernetes/charts/my-app --namespace default \
+      #   --set webApp.image.tag=${{ github.sha }} \
+      #   --set ingress.host.name=${{ secrets.PROD_INGRESS_HOST }}
