@@ -13,7 +13,7 @@ try:
     r.ping()
     print(f"Successfully connected to Redis at {REDIS_HOST}:{REDIS_PORT}")
 except redis.exceptions.ConnectionError as e:
-    print(f"Could not connect to Redis at {REDIS_HOST}:{REDIS_PORT}: {e}")
+    print(f"Could not connectt to Redis at {REDIS_HOST}:{REDIS_PORT}: {e}")
     r = None # Set r to None if connection fails
 
 @app.route('/')
@@ -21,7 +21,7 @@ def hello():
     if r:
         try:
             count = r.incr('visits')
-            message = f"Hello from Flask! I have been visited {count} times."
+            message = f"Hello from Flask! I have been visited {count} times. And testing CI/CD pipeline for 3rd time."
         except Exception as e:
             message = f"Hello from Flask! Could not increment visit count: {e}"
     else:

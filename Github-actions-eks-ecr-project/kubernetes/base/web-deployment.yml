@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: web-app
-        image: <YOUR_ECR_REGISTRY_URL>/my-web-app:latest # This will be replaced by Kustomize/GitOps
+        image: my-web-app # This will be replaced by Kustomize
         ports:
         - containerPort: 5000
         env:

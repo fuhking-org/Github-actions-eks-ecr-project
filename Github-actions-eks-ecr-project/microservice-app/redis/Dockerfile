@@ -11,3 +11,4 @@ EXPOSE 6379
 
 # The default command for the Redis image runs redis-server
 CMD ["redis-server"]
+# End of Dockerfile
